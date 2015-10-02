@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STS.General", "STS.General\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STS.General.SQL", "STS.General.SQL\STS.General.SQL\STS.General.SQL.csproj", "{72693B8C-90CD-4681-97D2-4247432E2422}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STSdb4", "STSdb4\STSdb4\STSdb4.csproj", "{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Dataflow Debug|Any CPU = Dataflow Debug|Any CPU
@@ -78,24 +76,6 @@ Global
 		{72693B8C-90CD-4681-97D2-4247432E2422}.Release|x64.Build.0 = Release|Any CPU
 		{72693B8C-90CD-4681-97D2-4247432E2422}.Release|x86.ActiveCfg = Release|Any CPU
 		{72693B8C-90CD-4681-97D2-4247432E2422}.Release|x86.Build.0 = Release|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Dataflow Debug|Any CPU.ActiveCfg = Dataflow Debug|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Dataflow Debug|Any CPU.Build.0 = Dataflow Debug|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Dataflow Debug|x64.ActiveCfg = Dataflow Debug|x64
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Dataflow Debug|x64.Build.0 = Dataflow Debug|x64
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Dataflow Debug|x86.ActiveCfg = Dataflow Debug|x86
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Dataflow Debug|x86.Build.0 = Dataflow Debug|x86
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Debug|x64.ActiveCfg = Debug|x64
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Debug|x64.Build.0 = Debug|x64
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Debug|x86.ActiveCfg = Debug|x86
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Debug|x86.Build.0 = Debug|x86
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Release|x64.ActiveCfg = Release|x64
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Release|x64.Build.0 = Release|x64
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Release|x86.ActiveCfg = Release|x86
-		{BE6C9FF2-7817-4EF4-BD8F-6F78126878D3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

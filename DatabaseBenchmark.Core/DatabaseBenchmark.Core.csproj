@@ -346,10 +346,6 @@
       <Project>{820fc9a2-48a0-4463-8182-d1ac8d539fb9}</Project>
       <Name>STS.General</Name>
     </ProjectReference>
-    <ProjectReference Include="..\STSdb4\STSdb4\STSdb4.csproj">
-      <Project>{be6c9ff2-7817-4ef4-bd8f-6f78126878d3}</Project>
-      <Name>STSdb4</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
