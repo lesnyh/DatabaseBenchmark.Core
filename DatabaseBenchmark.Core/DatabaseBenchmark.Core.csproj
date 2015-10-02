@@ -230,10 +230,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\STSdb.dll</HintPath>
     </Reference>
-    <Reference Include="STSdb4, Version=4.0.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\STSdb4.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -336,20 +332,24 @@
     <Compile Include="Statistics\SpeedStatistics.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\STS.General\STS.General.SQL\STS.General.SQL.csproj">
-      <Project>{72693b8c-90cd-4681-97d2-4247432e2422}</Project>
-      <Name>STS.General.SQL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\STS.General\STS.General\STS.General.csproj">
-      <Project>{820fc9a2-48a0-4463-8182-d1ac8d539fb9}</Project>
-      <Name>STS.General</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\STS.General.SQL\STS.General.SQL\STS.General.SQL.csproj">
+      <Project>{72693b8c-90cd-4681-97d2-4247432e2422}</Project>
+      <Name>STS.General.SQL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\STS.General\STS.General\STS.General.csproj">
+      <Project>{820fc9a2-48a0-4463-8182-d1ac8d539fb9}</Project>
+      <Name>STS.General</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\STSdb4\STSdb4\STSdb4.csproj">
+      <Project>{be6c9ff2-7817-4ef4-bd8f-6f78126878d3}</Project>
+      <Name>STSdb4</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
