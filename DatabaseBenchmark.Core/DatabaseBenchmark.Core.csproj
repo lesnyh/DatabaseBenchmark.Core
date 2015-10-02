@@ -230,6 +230,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\STSdb.dll</HintPath>
     </Reference>
+    <Reference Include="STSdb4, Version=4.0.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\STSdb4.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
@@ -302,7 +306,6 @@
     <Compile Include="Databases\SequentalDatabase.cs" />
     <Compile Include="Databases\SQLiteDatabase.cs" />
     <Compile Include="Databases\STSdb4Database.cs" />
-    <Compile Include="Databases\STSdb5Database.cs" />
     <Compile Include="Databases\STSdbDatabase.cs" />
     <Compile Include="Databases\TokuMXDatabase.cs" />
     <Compile Include="Databases\VelocityDBDatabase.cs" />
@@ -356,13 +359,8 @@ set thirdParty=%25drive%25\Third Party
 set ikvm=%25thirdParty%25\ikvm\ikvmbin-8.0.5449.1
 
 if exist %25drive%25 (
-  xcopy /d /y /r "%25source%25\STSdb\STSdb.dll" "$(TargetDir)"
+   xcopy /d /y /r "%25source%25\STSdb\STSdb.dll" "$(TargetDir)"
    xcopy /d /y /r "%25source%25\STSdb4\STSdb4.dll" "$(TargetDir)"
-rem xcopy /d /y /r "%25source%25\STSdb5\STSdb5.dll" "$(TargetDir)"
-rem xcopy /d /y /r "%25source%25\STSdb5.Azure\*.dll" "$(TargetDir)"
-rem xcopy /d /y /r "%25source%25\STSdb5.Google\*.dll" "$(TargetDir)"
-   xcopy /d /y /r "%25source%25\STSdb5.Google\*.p12" "$(TargetDir)"
-rem xcopy /d /y /r "%25source%25\STSdb5.Hadoop\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25source%25\Access\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25source%25\HamsterDB\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25source%25\BrightstarDB\*.dll" "$(TargetDir)"
