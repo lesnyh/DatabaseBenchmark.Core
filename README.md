@@ -17,7 +17,7 @@ During the tests, the following parameters are measured:
 Every tested database must be capable of performing this simple test - insert the generated records and read them, ordered by their keys.
 
 ## Use cases
-DatabaseBenchmark.Core can be used by developers to build simple or advanced database performance evaluation tools and applications.
+**DatabaseBenchmark.Core** can be used by developers to build simple or advanced database performance evaluation tools and applications.
 
 The library is multi-platform and can also be compiled under Microsoft .NET Framework 4.0+ or Mono 4.0.0+ for use in Windows or Linux distributions.
 
