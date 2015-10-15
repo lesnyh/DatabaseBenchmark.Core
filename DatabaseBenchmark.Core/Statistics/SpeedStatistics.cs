@@ -18,10 +18,15 @@ namespace DatabaseBenchmark.Core.Statistics
 
         public int Step { get; set; }
 
-        public SpeedStatistics(int capacity)
+        public SpeedStatistics(int capacity, int step)
         {
             recordTimeStat = new List<KeyValuePair<long, TimeSpan>>(capacity);
-            //recordTimeStat.Add(new KeyValuePair<long, TimeSpan>(0, new TimeSpan()));
+            Step = step;
+        }
+
+        public SpeedStatistics(int capacity)
+            : this(capacity, 1)
+        {
         }
 
         public SpeedStatistics()

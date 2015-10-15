@@ -274,7 +274,10 @@
     <Compile Include="Benchmarking\BenchmarkSession.cs" />
     <Compile Include="Benchmarking\BenchmarkSuite.cs" />
     <Compile Include="Benchmarking\KeysType.cs" />
+    <Compile Include="Benchmarking\TestFactory.cs" />
     <Compile Include="Benchmarking\TestMethod.cs" />
+    <Compile Include="ITest.cs" />
+    <Compile Include="Benchmarking\Tests\FullWriteReadTest.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="Databases\AccessDatabase.cs" />
     <Compile Include="Databases\AerospikeDatabase.cs" />
@@ -322,17 +325,18 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="ReflectionUtils.cs" />
-    <Compile Include="Report\CsvUtils.cs" />
-    <Compile Include="Report\JsonUtils.cs" />
-    <Compile Include="Report\ReportEnums.cs" />
-    <Compile Include="Report\SystemInfo.cs" />
-    <Compile Include="Report\SystemUtils.cs" />
+    <Compile Include="Reporting\CsvUtils.cs" />
+    <Compile Include="Reporting\JsonUtils.cs" />
+    <Compile Include="Reporting\ReportEnums.cs" />
+    <Compile Include="Reporting\SystemInfo.cs" />
+    <Compile Include="Reporting\SystemUtils.cs" />
     <Compile Include="Serialization\XmlDatabasePersist.cs" />
     <Compile Include="Statistics\IOStatistics.cs" />
     <Compile Include="Statistics\IStatistic.cs" />
     <Compile Include="Statistics\MemoryStatistics.cs" />
     <Compile Include="Statistics\ProcessorStatistics.cs" />
     <Compile Include="Statistics\SpeedStatistics.cs" />
+    <Compile Include="Statistics\PerformanceWatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Settings.settings">

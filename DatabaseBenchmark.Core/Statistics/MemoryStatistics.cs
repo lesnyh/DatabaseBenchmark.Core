@@ -18,7 +18,7 @@ namespace DatabaseBenchmark.Core.Statistics
 
         public int Step { get; set; }
 
-        public MemoryStatistics(int capacity)
+        public MemoryStatistics(int capacity, int step)
         {
             pagedMemory = new List<KeyValuePair<long, float>>(capacity);
             pagedMemory.Add(new KeyValuePair<long, float>(0, 0));
@@ -28,6 +28,13 @@ namespace DatabaseBenchmark.Core.Statistics
 
             workingSet = new List<KeyValuePair<long, float>>(capacity);
             workingSet.Add(new KeyValuePair<long, float>(0, 0));
+
+            Step = step;
+        }
+
+        public MemoryStatistics(int capacity)
+            : this(capacity, 1)
+        {
         }
 
         public MemoryStatistics()
