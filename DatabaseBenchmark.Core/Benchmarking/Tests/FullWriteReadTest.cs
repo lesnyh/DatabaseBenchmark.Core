@@ -25,7 +25,6 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
         #region ITest Members
 
-        public event Action<ITest, string> OnTestMethodCompleted;
         public event Action<ITest, Exception> OnException;
 
         public string Name
@@ -113,10 +112,6 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
                 Database.Init(FlowCount, RecordCount);
             }
-            catch (OperationCanceledException)
-            {
-                ActiveReport.Reset();
-            }
             finally
             {
                 ActiveReport.Stop();
@@ -142,16 +137,9 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
                 DatabaseSize = Database.Size;
             }
-            catch(OperationCanceledException)
-            {
-                CurrentReport.Reset();
-            }
             finally
             {
                 CurrentReport.Stop();
-
-                if (OnTestMethodCompleted != null)
-                    OnTestMethodCompleted("Write", this);
 
                 tasks = null;
                 CurrentReport = null;
@@ -172,20 +160,9 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
                 DatabaseSize = Database.Size;
             }
-            catch (KeysNotOrderedException )
-            {
-                CurrentReport.Reset();
-            }
-            catch (OperationCanceledException)
-            {
-                CurrentReport.Reset();
-            }
             finally
             {
                 CurrentReport.Stop();
-
-                if (OnTestMethodCompleted != null)
-                    OnTestMethodCompleted("Read", this);
 
                 task = null;
                 CurrentReport = null;
@@ -206,20 +183,9 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
                 DatabaseSize = Database.Size;
             }
-            catch (KeysNotOrderedException)
-            {
-                CurrentReport.Reset();
-            }
-            catch (OperationCanceledException)
-            {
-                CurrentReport.Reset();
-            }
             finally
             {
                 CurrentReport.Stop();
-
-                if (OnTestMethodCompleted != null)
-                    OnTestMethodCompleted("Secondary Read", this);
 
                 task = null;
                 CurrentReport = null;

@@ -20,6 +20,7 @@ namespace DatabaseBenchmark.Core.Benchmarking
 
         public event Action<PerformanceWatch> OnStart;
         public event Action<PerformanceWatch> OnStop;
+        public event Action<ITest, Exception> OnException;
       
         public ITest CurrentTest { get; private set; }
 
@@ -33,17 +34,30 @@ namespace DatabaseBenchmark.Core.Benchmarking
             foreach (var test in tests)
             {
                 CurrentTest = test;
-                CurrentTest.ActiveReport.OnStart += OnStart;
-                CurrentTest.ActiveReport.OnStop += OnStop;
 
-                CurrentTest.Start(token);
+                try
+                {
+                    CurrentTest.ActiveReport.OnStart += OnStart;
+                    CurrentTest.ActiveReport.OnStart += LogOnStart;
+
+                    CurrentTest.ActiveReport.OnStop += OnStop;
+                    CurrentTest.ActiveReport.OnStop += LogOnStop;
+
+                    CurrentTest.OnException += OnException;
+
+                    CurrentTest.Start(token);
+                }
+                catch (Exception exc)
+                {
+                    Logger.Error("Test execution error...", exc);
+                }
             }
 
             CurrentTest = null;
         }
 
         /// <summary>
-        /// Get moment speed entries of the current database in records/sec.
+        /// Get moment speed entries of the current database in records/sec for the current running test.
         /// </summary>
         public IEnumerable<KeyValuePair<long, double>> GetMomentSpeeds(int position)
         {
@@ -70,7 +84,7 @@ namespace DatabaseBenchmark.Core.Benchmarking
         }
 
         /// <summary>
-        /// Get average speed entries of the current database in records/sec.
+        /// Get average speed entries of the current database in records/sec for the current running test.
         /// </summary>
         public IEnumerable<KeyValuePair<long, double>> GetAverageSpeeds(int position)
         {
@@ -93,7 +107,7 @@ namespace DatabaseBenchmark.Core.Benchmarking
         }
 
         /// <summary>
-        /// Gets  average memory working set entries in bytes.
+        /// Gets  average memory working set entries in bytes for the current running test.
         /// </summary>
         public IEnumerable<KeyValuePair<long, double>> GetMomentWorkingSets(int position)
         {
@@ -113,6 +127,16 @@ namespace DatabaseBenchmark.Core.Benchmarking
                     yield return new KeyValuePair<long, double>(records, workingSet);
                 }
             }
+        }
+
+        private void LogOnStart(PerformanceWatch report)
+        {
+            Logger.Info(String.Format("{0} started.", report.Name));
+        }
+
+        private void LogOnStop(PerformanceWatch report)
+        {
+            Logger.Info(String.Format("{0} stopped.", report.Name));
         }
     }
 }

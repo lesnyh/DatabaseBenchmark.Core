@@ -55,15 +55,6 @@ namespace DatabaseBenchmark.Core.Statistics
         }
 
         /// <summary>
-        /// Reset all statistics.
-        /// </summary>
-        public void Reset()
-        {
-            SpeedStatistics.Reset();
-            MemoryStatistics.Reset();
-        }
-
-        /// <summary>
         /// Add point to all statistics.
         /// </summary>
         public void Add()
