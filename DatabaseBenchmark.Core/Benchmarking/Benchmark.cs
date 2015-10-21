@@ -5,39 +5,38 @@ using DatabaseBenchmark.Core.Properties;
 using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
+using DatabaseBenchmark.Core.Statistics;
 
 namespace DatabaseBenchmark.Core.Benchmarking
 {
     /// <summary>
-    /// Represents a benchmark test suite that executes all of the tests.
+    /// Represents a benchmark that executes all of the tests.
     /// </summary>
-    public class BenchmarkSuite
+    public class Benchmark
     {
         public const int INTERVAL_COUNT = 100;
 
         private ILog Logger;
 
-        public event Action<string, ITest> OnTestMethodCompleted;
-        public event Action<Exception, ITest> OnException;
-
+        public event Action<PerformanceWatch> OnStart;
+        public event Action<PerformanceWatch> OnStop;
+      
         public ITest CurrentTest { get; private set; }
 
-        public BenchmarkSuite()
+        public Benchmark()
         {
             Logger = LogManager.GetLogger(Settings.Default.TestLogger);
         }
 
-        public void ExecuteTests(long flowCount, long recordCount, float randomness, CancellationTokenSource token, params ITest[] tests)
+        public void ExecuteTests(CancellationTokenSource token, params ITest[] tests)
         {
             foreach (var test in tests)
             {
                 CurrentTest = test;
+                CurrentTest.ActiveReport.OnStart += OnStart;
+                CurrentTest.ActiveReport.OnStop += OnStop;
 
-                CurrentTest.OnTestMethodCompleted += OnTestMethodCompleted;
-                CurrentTest.OnException += OnException;
-
-                CurrentTest.Start();
-                CurrentTest.Stop();
+                CurrentTest.Start(token);
             }
 
             CurrentTest = null;

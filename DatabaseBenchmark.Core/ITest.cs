@@ -1,27 +1,23 @@
 ﻿using DatabaseBenchmark.Core.Statistics;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace DatabaseBenchmark.Core
 {
     public interface ITest
     {
-        event Action<string, ITest> OnTestMethodCompleted;
-        event Action<Exception, ITest> OnException;
+        event Action<ITest, Exception> OnException;
 
         string Name { get; }
         string Description { get; }
         string Status { get; }
 
-        DateTime StartTime { get; }
-        DateTime EndTime { get; }
-
         IDatabase Database { get; }
 
         List<PerformanceWatch> Reports { get; }
-        PerformanceWatch ActiveReport { get; set; }
+        PerformanceWatch ActiveReport { get; }
 
-        void Start();
-        void Stop();
+        void Start(CancellationTokenSource cancellationToken);
     }
 }

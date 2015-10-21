@@ -9,6 +9,9 @@ namespace DatabaseBenchmark.Core.Statistics
 {
     public class PerformanceWatch
     {
+        public event Action<PerformanceWatch> OnStart;
+        public event Action<PerformanceWatch> OnStop;
+
         public string Name { get; }
 
         public SpeedStatistics SpeedStatistics { get; set; }
@@ -18,8 +21,8 @@ namespace DatabaseBenchmark.Core.Statistics
         {
             Name = name;
 
-            SpeedStatistics = new SpeedStatistics(BenchmarkSuite.INTERVAL_COUNT, step);
-            MemoryStatistics = new MemoryStatistics(BenchmarkSuite.INTERVAL_COUNT, step);
+            SpeedStatistics = new SpeedStatistics(Benchmark.INTERVAL_COUNT, step);
+            MemoryStatistics = new MemoryStatistics(Benchmark.INTERVAL_COUNT, step);
         }
 
         public PerformanceWatch()
@@ -34,6 +37,9 @@ namespace DatabaseBenchmark.Core.Statistics
         {
             SpeedStatistics.Start();
             MemoryStatistics.Start();
+
+            if (OnStart != null)
+                OnStart(this);
         }
 
         /// <summary>
@@ -43,6 +49,9 @@ namespace DatabaseBenchmark.Core.Statistics
         {
             SpeedStatistics.Stop();
             MemoryStatistics.Stop();
+
+            if (OnStop != null)
+                OnStop(this);
         }
 
         /// <summary>

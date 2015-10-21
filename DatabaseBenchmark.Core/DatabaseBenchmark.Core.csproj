@@ -272,7 +272,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Benchmarking\BenchmarkSession.cs" />
-    <Compile Include="Benchmarking\BenchmarkSuite.cs" />
+    <Compile Include="Benchmarking\Benchmark.cs" />
     <Compile Include="Benchmarking\KeysType.cs" />
     <Compile Include="Benchmarking\TestFactory.cs" />
     <Compile Include="Benchmarking\TestMethod.cs" />
