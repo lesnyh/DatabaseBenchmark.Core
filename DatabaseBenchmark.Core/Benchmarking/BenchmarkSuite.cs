@@ -2,6 +2,9 @@
 using System;
 using DatabaseBenchmark.Core.Exceptions;
 using DatabaseBenchmark.Core.Properties;
+using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DatabaseBenchmark.Core.Benchmarking
 {
@@ -10,171 +13,106 @@ namespace DatabaseBenchmark.Core.Benchmarking
     /// </summary>
     public class BenchmarkSuite
     {
+        public const int INTERVAL_COUNT = 100;
+
         private ILog Logger;
 
-        public event Action<BenchmarkSession, TestMethod> OnTestMethodCompleted;
-        public event Action<Exception, BenchmarkSession> OnException;
+        public event Action<string, ITest> OnTestMethodCompleted;
+        public event Action<Exception, ITest> OnException;
 
-        public BenchmarkSession CurrentTest { get; private set; }
+        public ITest CurrentTest { get; private set; }
 
         public BenchmarkSuite()
         {
             Logger = LogManager.GetLogger(Settings.Default.TestLogger);
         }
 
-        public void ExecuteInit(BenchmarkSession test)
+        public void ExecuteTests(long flowCount, long recordCount, float randomness, CancellationTokenSource token, params ITest[] tests)
         {
-            CurrentTest = test;
-            string databaseName = test.Database.Name;
-
-            try
+            foreach (var test in tests)
             {
-                Logger.Info("");
-                Logger.Info(String.Format("{0} Init() started...", databaseName));
+                CurrentTest = test;
 
-                CurrentTest.Init();
+                CurrentTest.OnTestMethodCompleted += OnTestMethodCompleted;
+                CurrentTest.OnException += OnException;
 
-                Logger.Info(String.Format("{0} Init() ended...", databaseName));
+                CurrentTest.Start();
+                CurrentTest.Stop();
             }
-            catch (Exception exc)
-            {
-                Logger.Error(String.Format("{0} Init() failed...", databaseName));
-                Logger.Error(String.Format("{0} Init()", databaseName), exc);
 
-                if(OnException != null)
-                    OnException(exc, test);
-            }
-            finally
+            CurrentTest = null;
+        }
+
+        /// <summary>
+        /// Get moment speed entries of the current database in records/sec.
+        /// </summary>
+        public IEnumerable<KeyValuePair<long, double>> GetMomentSpeeds(int position)
+        {
+            lock (CurrentTest.ActiveReport)
             {
-                CurrentTest = null;
+                var array = CurrentTest.ActiveReport.SpeedStatistics.RecordTime;
+                var length = array.Length;
+
+                if (position == 0)
+                    position = 1;
+
+                for (; position < length; position++)
+                {
+                    var records = array[position].Key;
+                    var oldRecords = array[position - 1].Key;
+                    var currentElapsed = array[position].Value.TotalSeconds;
+                    var previousElapsed = array[position - 1].Value.TotalSeconds;
+
+                    var speed = (records - oldRecords) / (currentElapsed - previousElapsed);
+
+                    yield return new KeyValuePair<long, double>(records, speed);
+                }
             }
         }
 
-        public void ExecuteWrite(BenchmarkSession test)
+        /// <summary>
+        /// Get average speed entries of the current database in records/sec.
+        /// </summary>
+        public IEnumerable<KeyValuePair<long, double>> GetAverageSpeeds(int position)
         {
-            CurrentTest = test;
-            string databaseName = test.Database.Name;
-
-            try
+            lock (CurrentTest.ActiveReport)
             {
-                Logger.Info(String.Format("{0} Write() started...", databaseName));
-                CurrentTest.Write();
-                Logger.Info(String.Format("{0} Write() ended...", databaseName));
-            }
-            catch (Exception exc)
-            {
-                Logger.Error(String.Format("{0} Write() failed...", databaseName));
-                Logger.Error(String.Format("{0} Write()", databaseName), exc);
+                var array = CurrentTest.ActiveReport.SpeedStatistics.RecordTime;
+                var count = array.Length;
 
-                if (OnException != null)
-                    OnException(exc, test);
-            }
-            finally
-            {
-                CurrentTest = null;
+                if (position == 0)
+                    position = 1;
 
-                if(OnTestMethodCompleted != null)
-                    OnTestMethodCompleted(test, TestMethod.Write);
+                for (; position < count; position++)
+                {
+                    var records = array[position].Key;
+                    var speed = (records / array[position].Value.TotalSeconds);
+
+                    yield return new KeyValuePair<long, double>(records, speed);
+                }
             }
         }
 
-        public void ExecuteRead(BenchmarkSession test)
+        /// <summary>
+        /// Gets  average memory working set entries in bytes.
+        /// </summary>
+        public IEnumerable<KeyValuePair<long, double>> GetMomentWorkingSets(int position)
         {
-            CurrentTest = test;
-            string databaseName = test.Database.Name;
-
-            try
+            lock (CurrentTest.ActiveReport)
             {
-                Logger.Info(String.Format("{0} Read() started...", databaseName));
+                var array = CurrentTest.ActiveReport.MemoryStatistics.MomentWorkingSetStats.ToArray();
+                var length = array.Length;
 
-                CurrentTest.Read();
+                if (position == 0)
+                    position = 1;
 
-                Logger.Info(String.Format("Records read: {0}", test.RecordsRead.ToString("N0")));
-                Logger.Info(String.Format("{0} Read() ended...", databaseName));
-            }
-            catch(KeysNotOrderedException exc)
-            {
-                Logger.Error(String.Format("{0} The database does not return the records ordered by key. The test is invalid!...", databaseName));
-                Logger.Error(String.Format("{0} {1}", databaseName, exc.Message));
+                for (; position < length; position++)
+                {
+                    var records = array[position].Key;
+                    var workingSet = array[position].Value;
 
-                if (OnException != null)
-                    OnException(exc, test);
-            }
-            catch (Exception exc)
-            {
-                Logger.Error(String.Format("{0} Read() failed...", databaseName));
-                Logger.Error(String.Format("{0} Read()", databaseName), exc);
-
-                if (OnException != null)
-                    OnException(exc, test);
-            }
-            finally
-            {
-                CurrentTest = null;
-
-                if(OnTestMethodCompleted != null)
-                    OnTestMethodCompleted(test, TestMethod.Read);
-            }
-        }
-
-        public void ExecuteSecondaryRead(BenchmarkSession test)
-        {
-            CurrentTest = test;
-            string databaseName = test.Database.Name;
-
-            try
-            {
-                Logger.Info(String.Format("{0} SecondaryRead() started...", databaseName));
-
-                CurrentTest.SecondaryRead();
-
-                Logger.Info(String.Format("Records read: {0}", test.RecordsRead.ToString("N0")));
-                Logger.Info(String.Format("{0} SecondaryRead() ended...", databaseName));
-            }
-            catch (KeysNotOrderedException exc)
-            {
-                Logger.Error(String.Format("{0} The database does not return the records ordered by key. The test is invalid!...", databaseName));
-                Logger.Error(String.Format("{0} Read()", databaseName), exc);
-
-                if (OnException != null)
-                    OnException(exc, test);
-            }
-            catch (Exception exc)
-            {
-                Logger.Error(String.Format("{0} Secondary Read failed...", databaseName));
-                Logger.Error(String.Format("{0} Secondary Read()", databaseName), exc);
-
-                if (OnException != null)
-                    OnException(exc, test);
-            }
-            finally
-            {
-                CurrentTest = null;
-
-                if(OnTestMethodCompleted != null)
-                    OnTestMethodCompleted(test, TestMethod.SecondaryRead);
-            }
-        }
-
-        public void ExecuteFinish(BenchmarkSession test)
-        {
-            CurrentTest = test;
-
-            try
-            {
-                CurrentTest.Finish();
-            }
-            catch (Exception exc)
-            {
-                Logger.Error(String.Format("{0} Finish() failed...", test.Database.Name));
-                Logger.Error(String.Format("{0} Finish()", test.Database.Name), exc);
-
-                if (OnException != null)
-                    OnException(exc, test);
-            }
-            finally
-            {
-                CurrentTest = null;
+                    yield return new KeyValuePair<long, double>(records, workingSet);
+                }
             }
         }
     }
