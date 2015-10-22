@@ -118,7 +118,7 @@ namespace DatabaseBenchmark.Core.Utils
 
         public static Type[] GetTestTypes()
         {
-            return Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ITest)) && t.GetConstructor(new Type[] { }) != null).ToArray();
+            return Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetInterface("ITest") == typeof(ITest) && t.GetConstructor(new Type[] { }) != null).ToArray();
         }
     }
 }
