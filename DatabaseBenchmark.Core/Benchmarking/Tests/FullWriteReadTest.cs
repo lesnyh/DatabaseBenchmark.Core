@@ -79,6 +79,10 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             Reports.Add(new PerformanceWatch("Full Secondary Read", step));
         }
 
+        public FullWriteReadTest()
+        {
+        }
+
         #region ITest Methods
 
         public void Start(CancellationTokenSource cancellationToken)

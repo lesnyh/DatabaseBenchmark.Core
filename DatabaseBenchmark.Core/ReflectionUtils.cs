@@ -104,5 +104,21 @@ namespace DatabaseBenchmark.Core.Utils
 
             return result;
         }
+
+        public static ITest[] GetTests()
+        {
+            var testTypes = GetTestTypes();
+            ITest[] tests = new ITest[testTypes.Length];
+
+            for (int i = 0; i < tests.Length; i++)
+                tests[i] = (ITest)Activator.CreateInstance(testTypes[i]);
+
+            return tests;
+        }
+
+        public static Type[] GetTestTypes()
+        {
+            return Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ITest)) && t.GetConstructor(new Type[] { }) != null).ToArray();
+        }
     }
 }
