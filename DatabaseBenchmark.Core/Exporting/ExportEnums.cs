@@ -1,13 +1,13 @@
 ﻿
 namespace DatabaseBenchmark.Reporting
 {
-    public enum ReportType : byte
+    public enum ExportType : byte
     {
         Summary,
         Detailed
     }
 
-    public enum ReportFormat : byte
+    public enum ExportFormat : byte
     {
         CSV,
         JSON,

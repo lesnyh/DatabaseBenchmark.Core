@@ -7,6 +7,7 @@ using System.Data;
 using System.Data.SqlServerCe;
 using System.IO;
 using System.Xml.Serialization;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Xml.Serialization;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

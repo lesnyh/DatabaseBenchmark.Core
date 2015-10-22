@@ -8,6 +8,7 @@ using STS.General.Data;
 using System.IO;
 using STS.General.IO;
 using System.Drawing;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

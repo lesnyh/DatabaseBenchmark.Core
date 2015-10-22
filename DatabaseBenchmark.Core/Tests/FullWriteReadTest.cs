@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DatabaseBenchmark.Core.Benchmarking.Tests
+namespace DatabaseBenchmark.Core.Tests
 {
     public class FullWriteReadTest : Test
     {
@@ -40,7 +40,6 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
         public long RecordCount { get; private set; }
 
         public float Randomness { get; private set; }
-        public KeysType KeysType { get; private set; }
 
         public long DatabaseSize { get; private set; }
         public long RecordsRead { get; private set; }
@@ -50,7 +49,6 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             FlowCount = flowCount;
             RecordCount = recordCount;
             Randomness = randomness;
-            KeysType = Randomness > 0 ? KeysType.Random : KeysType.Sequential;
 
             Cancellation = cancellation;
             Database = database;
@@ -144,7 +142,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 ActiveReport = Reports[READ];
                 ActiveReport.Start();
 
-                task = DoRead(TestMethod.Read);
+                task = DoRead();
                 task.Wait(Cancellation);
 
                 DatabaseSize = Database.Size;
@@ -167,7 +165,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 ActiveReport = Reports[SECONDARY_READ];
                 ActiveReport.Start();
 
-                task = DoRead(TestMethod.Read);
+                task = DoRead();
                 task.Wait(Cancellation);
 
                 DatabaseSize = Database.Size;
@@ -257,11 +255,10 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             return tasks;
         }
 
-        private Task DoRead(TestMethod method)
+        private Task DoRead()
         {
-            Task task = Task.Factory.StartNew((Action<object>)((state) =>
+            Task task = Task.Factory.StartNew((Action)(() =>
             {
-                int methodIndex = (int)state;
                 var flow = Wrap(Database.Read(), Reports, Cancellation);
 
                 long count = 0;
@@ -282,7 +279,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
                 RecordsRead = count;
 
-            }), (int)method, Cancellation, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }) , Cancellation, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
             return task;
         }

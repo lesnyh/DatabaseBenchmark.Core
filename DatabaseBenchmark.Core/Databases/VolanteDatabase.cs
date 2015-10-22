@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using Volante;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

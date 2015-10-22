@@ -11,6 +11,7 @@ using System.Globalization;
 using System.IO;
 using System.Xml.Serialization;
 using System.ComponentModel;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

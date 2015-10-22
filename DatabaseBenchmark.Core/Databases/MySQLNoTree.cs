@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using STS.General.Generators;
 using STS.General.SQL.Extensions;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

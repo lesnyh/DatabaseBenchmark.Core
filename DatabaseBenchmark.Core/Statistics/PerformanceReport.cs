@@ -1,4 +1,4 @@
-﻿using DatabaseBenchmark.Core.Benchmarking;
+﻿using DatabaseBenchmark.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,9 @@ namespace DatabaseBenchmark.Core.Statistics
         public event Action<PerformanceReport> OnStop;
 
         private string name;
+
         public string Name { get { return name; } }
+        public int Step { get; private set; }
 
         public SpeedStatistics SpeedStatistics { get; set; }
         public MemoryStatistics MemoryStatistics { get; set; }

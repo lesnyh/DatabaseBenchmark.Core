@@ -271,13 +271,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Benchmarking\BenchmarkSession.cs" />
-    <Compile Include="Benchmarking\Benchmark.cs" />
-    <Compile Include="Benchmarking\KeysType.cs" />
-    <Compile Include="Benchmarking\TestFactory.cs" />
-    <Compile Include="Benchmarking\TestMethod.cs" />
+    <Compile Include="Benchmark.cs" />
+    <Compile Include="Tests\FullWriteReadTest.cs" />
     <Compile Include="ITest.cs" />
-    <Compile Include="Benchmarking\Tests\FullWriteReadTest.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="Databases\AccessDatabase.cs" />
     <Compile Include="Databases\AerospikeDatabase.cs" />
@@ -313,7 +309,7 @@
     <Compile Include="Databases\TokuMXDatabase.cs" />
     <Compile Include="Databases\VelocityDBDatabase.cs" />
     <Compile Include="Databases\VolanteDatabase.cs" />
-    <Compile Include="DbParameterAttribute.cs" />
+    <Compile Include="Attributes\DbParameterAttribute.cs" />
     <Compile Include="Exceptions\KeysNotOrderedException.cs" />
     <Compile Include="IDatabase.cs" />
     <Compile Include="Logging\StringAppender.cs" />
@@ -324,12 +320,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="ReflectionUtils.cs" />
-    <Compile Include="Reporting\CsvUtils.cs" />
-    <Compile Include="Reporting\JsonUtils.cs" />
-    <Compile Include="Reporting\ReportEnums.cs" />
-    <Compile Include="Reporting\SystemInfo.cs" />
-    <Compile Include="Reporting\SystemUtils.cs" />
+    <Compile Include="Utils\ReflectionUtils.cs" />
+    <Compile Include="Exporting\CsvUtils.cs" />
+    <Compile Include="Exporting\JsonUtils.cs" />
+    <Compile Include="Exporting\ExportEnums.cs" />
+    <Compile Include="Exporting\SystemInfo.cs" />
+    <Compile Include="Exporting\SystemUtils.cs" />
     <Compile Include="Serialization\XmlDatabasePersist.cs" />
     <Compile Include="Statistics\IOStatistics.cs" />
     <Compile Include="Statistics\IStatistic.cs" />

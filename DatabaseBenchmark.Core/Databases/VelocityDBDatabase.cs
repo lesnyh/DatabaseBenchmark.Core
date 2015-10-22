@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using VelocityDb;
 using VelocityDb.Collection.BTree;
 using VelocityDb.Session;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

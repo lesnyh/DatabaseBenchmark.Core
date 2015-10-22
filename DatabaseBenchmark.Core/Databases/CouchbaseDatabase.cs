@@ -7,6 +7,7 @@ using System;
 using DatabaseBenchmark.Core;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

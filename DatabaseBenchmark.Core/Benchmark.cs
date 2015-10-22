@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DatabaseBenchmark.Core.Statistics;
 
-namespace DatabaseBenchmark.Core.Benchmarking
+namespace DatabaseBenchmark.Core
 {
     /// <summary>
     /// Represents a benchmark that executes all of the tests.

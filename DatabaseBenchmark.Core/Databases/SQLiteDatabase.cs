@@ -9,6 +9,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Xml.Serialization;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {

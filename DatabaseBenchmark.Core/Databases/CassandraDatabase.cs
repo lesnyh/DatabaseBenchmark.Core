@@ -9,6 +9,7 @@ using System.Linq;
 using System.Management;
 using System.Text;
 using System.Xml.Serialization;
+using DatabaseBenchmark.Core.Attributes;
 
 namespace DatabaseBenchmark.Databases
 {
