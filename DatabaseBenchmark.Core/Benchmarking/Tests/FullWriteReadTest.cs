@@ -19,9 +19,13 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
         private const int SECONDARY_READ = 2;
         private const int TESTS_COUNT = 3;
 
-        private CancellationTokenSource Cancellation;
         private ILog Logger;
+        private CancellationTokenSource Cancellation;
         private PerformanceWatch CurrentReport;
+
+        private IDatabase database;
+        private string status;
+        private List<PerformanceWatch> reports;
 
         #region ITest Members
 
@@ -37,16 +41,16 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             get { return "Performs full write and read test."; }
         }
 
-        public string Status { get; }
-
-        public IDatabase Database { get; }
-
-        public List<PerformanceWatch> Reports { get; }
-
-        public PerformanceWatch ActiveReport
+        public string Status
         {
-            get { return CurrentReport; }
+            get { return status; }
         }
+
+        public IDatabase Database { get { return database; } }
+
+        public List<PerformanceWatch> Reports { get { return reports; } }
+
+        public PerformanceWatch ActiveReport { get { return CurrentReport; } }
 
         #endregion
 
@@ -67,16 +71,16 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             KeysType = Randomness > 0 ? KeysType.Random : KeysType.Sequential;
 
             Cancellation = cancellation;
-            Database = database;
+            this.database = database;
 
             Logger = LogManager.GetLogger(Settings.Default.TestLogger);
 
             int step = (int)((recordCount) / Benchmark.INTERVAL_COUNT);
-            Reports = new List<PerformanceWatch>();
+            reports = new List<PerformanceWatch>();
 
-            Reports.Add(new PerformanceWatch("Full Write", step));
-            Reports.Add(new PerformanceWatch("Full Read", step));
-            Reports.Add(new PerformanceWatch("Full Secondary Read", step));
+            reports.Add(new PerformanceWatch("Full Write", step));
+            reports.Add(new PerformanceWatch("Full Read", step));
+            reports.Add(new PerformanceWatch("Full Secondary Read", step));
         }
 
         public FullWriteReadTest()
@@ -114,7 +118,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 CurrentReport = Reports[WRITE];
                 ActiveReport.Start();
 
-                Database.Init(FlowCount, RecordCount);
+                database.Init(FlowCount, RecordCount);
             }
             finally
             {
@@ -139,7 +143,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 tasks = DoWrite(flows);
                 Task.WaitAll(tasks, Cancellation.Token);
 
-                DatabaseSize = Database.Size;
+                DatabaseSize = database.Size;
             }
             finally
             {
@@ -162,7 +166,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 task = DoRead(TestMethod.Read);
                 task.Wait(Cancellation.Token);
 
-                DatabaseSize = Database.Size;
+                DatabaseSize = database.Size;
             }
             finally
             {
@@ -185,7 +189,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 task = DoRead(TestMethod.Read);
                 task.Wait(Cancellation.Token);
 
-                DatabaseSize = Database.Size;
+                DatabaseSize = database.Size;
             }
             finally
             {
@@ -199,7 +203,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
         public void Finish()
         {
             if (!Cancellation.IsCancellationRequested)
-                DatabaseSize = Database.Size;
+                DatabaseSize = database.Size;
             else
             {
                 DatabaseSize = 0;
@@ -211,7 +215,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
             try
             {
-                Database.Finish();
+                database.Finish();
             }
             finally
             {
@@ -264,7 +268,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                     int index = (int)state;
                     var flow = Wrap(flows[index], Reports, Cancellation.Token);
 
-                    Database.Write(index, flow);
+                    database.Write(index, flow);
 
                 }), i, Cancellation.Token, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
@@ -277,7 +281,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             Task task = Task.Factory.StartNew((Action<object>)((state) =>
             {
                 int methodIndex = (int)state;
-                var flow = Wrap(Database.Read(), Reports, Cancellation.Token);
+                var flow = Wrap(database.Read(), Reports, Cancellation.Token);
 
                 long count = 0;
                 RecordsRead = 0;
