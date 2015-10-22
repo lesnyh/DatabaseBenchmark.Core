@@ -337,6 +337,7 @@
     <Compile Include="Statistics\ProcessorStatistics.cs" />
     <Compile Include="Statistics\SpeedStatistics.cs" />
     <Compile Include="Statistics\PerformanceWatch.cs" />
+    <Compile Include="Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Settings.settings">

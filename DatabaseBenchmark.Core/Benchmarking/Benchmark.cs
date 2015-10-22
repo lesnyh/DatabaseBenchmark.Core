@@ -20,7 +20,6 @@ namespace DatabaseBenchmark.Core.Benchmarking
 
         public event Action<PerformanceWatch> OnStart;
         public event Action<PerformanceWatch> OnStop;
-        public event Action<ITest, Exception> OnException;
       
         public ITest CurrentTest { get; private set; }
 
@@ -29,7 +28,7 @@ namespace DatabaseBenchmark.Core.Benchmarking
             Logger = LogManager.GetLogger(Settings.Default.TestLogger);
         }
 
-        public void ExecuteTests(CancellationTokenSource token, params ITest[] tests)
+        public void ExecuteTests(CancellationToken token, params ITest[] tests)
         {
             foreach (var test in tests)
             {
@@ -42,8 +41,6 @@ namespace DatabaseBenchmark.Core.Benchmarking
 
                     CurrentTest.ActiveReport.OnStop += OnStop;
                     CurrentTest.ActiveReport.OnStop += LogOnStop;
-
-                    CurrentTest.OnException += OnException;
 
                     CurrentTest.Start(token);
                 }
