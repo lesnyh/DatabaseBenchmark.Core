@@ -21,11 +21,11 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
         private CancellationTokenSource Cancellation;
         private ILog Logger;
+        private PerformanceWatch CurrentReport;
 
         #region ITest Members
 
-        public event Action<string, ITest> OnTestMethodCompleted;
-        public event Action<Exception, ITest> OnException;
+        public event Action<ITest, Exception> OnException;
 
         public string Name
         {
@@ -42,10 +42,11 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
         public IDatabase Database { get; }
 
         public List<PerformanceWatch> Reports { get; }
-        public PerformanceWatch ActiveReport { get; set; }
 
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public PerformanceWatch ActiveReport
+        {
+            get { return CurrentReport; }
+        }
 
         #endregion
 
@@ -70,7 +71,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
             Logger = LogManager.GetLogger(Settings.Default.TestLogger);
 
-            int step = (int)((recordCount) / BenchmarkSuite.INTERVAL_COUNT);
+            int step = (int)((recordCount) / Benchmark.INTERVAL_COUNT);
             Reports = new List<PerformanceWatch>();
 
             Reports.Add(new PerformanceWatch("Full Write", step));
@@ -78,10 +79,16 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             Reports.Add(new PerformanceWatch("Full Secondary Read", step));
         }
 
+        public FullWriteReadTest()
+        {
+        }
+
         #region ITest Methods
 
-        public void Start()
+        public void Start(CancellationTokenSource cancellationToken)
         {
+            Cancellation = cancellationToken;
+
             try
             {
                 Init();
@@ -91,19 +98,8 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             }
             catch (Exception exc)
             {
-                Logger.Error("Test error...", exc);
-            }
-        }
-
-        public void Stop()
-        {
-            try
-            {
-                Cancellation.Cancel();
-            }
-            catch(Exception exc)
-            {
-                Logger.Error("Test stop error...", exc);
+                if (OnException != null)
+                    OnException(this, exc);
             }
         }
 
@@ -113,23 +109,17 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
         private void Init()
         {
-            StartTime = DateTime.Now;
-
             try
             {
-                ActiveReport = Reports[WRITE];
+                CurrentReport = Reports[WRITE];
                 ActiveReport.Start();
 
                 Database.Init(FlowCount, RecordCount);
             }
-            catch (OperationCanceledException)
-            {
-                ActiveReport.Reset();
-            }
             finally
             {
                 ActiveReport.Stop();
-                ActiveReport = null;
+                CurrentReport = null;
             }
         }
 
@@ -143,27 +133,20 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 for (int k = 0; k < flows.Length; k++)
                     flows[k] = GetFlow();
 
-                ActiveReport = Reports[WRITE];
-                ActiveReport.Start();
+                CurrentReport = Reports[WRITE];
+                CurrentReport.Start();
 
                 tasks = DoWrite(flows);
                 Task.WaitAll(tasks, Cancellation.Token);
 
                 DatabaseSize = Database.Size;
             }
-            catch(OperationCanceledException)
-            {
-                ActiveReport.Reset();
-            }
             finally
             {
-                ActiveReport.Stop();
-
-                if (OnTestMethodCompleted != null)
-                    OnTestMethodCompleted("Write", this);
+                CurrentReport.Stop();
 
                 tasks = null;
-                ActiveReport = null;
+                CurrentReport = null;
             }
         }
 
@@ -173,31 +156,20 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
             try
             {
-                ActiveReport = Reports[READ];
-                ActiveReport.Start();
+                CurrentReport = Reports[READ];
+                CurrentReport.Start();
 
                 task = DoRead(TestMethod.Read);
                 task.Wait(Cancellation.Token);
 
                 DatabaseSize = Database.Size;
             }
-            catch (KeysNotOrderedException )
-            {
-                ActiveReport.Reset();
-            }
-            catch (OperationCanceledException)
-            {
-                ActiveReport.Reset();
-            }
             finally
             {
-                ActiveReport.Stop();
-
-                if (OnTestMethodCompleted != null)
-                    OnTestMethodCompleted("Read", this);
+                CurrentReport.Stop();
 
                 task = null;
-                ActiveReport = null;
+                CurrentReport = null;
             }
         }
 
@@ -207,32 +179,20 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
 
             try
             {
-                ActiveReport = Reports[SECONDARY_READ];
-                ActiveReport.Start();
+                CurrentReport = Reports[SECONDARY_READ];
+                CurrentReport.Start();
 
                 task = DoRead(TestMethod.Read);
                 task.Wait(Cancellation.Token);
 
                 DatabaseSize = Database.Size;
             }
-            catch (KeysNotOrderedException)
-            {
-                ActiveReport.Reset();
-            }
-            catch (OperationCanceledException)
-            {
-                ActiveReport.Reset();
-            }
             finally
             {
-                ActiveReport.Stop();
-                EndTime = DateTime.Now;
-
-                if (OnTestMethodCompleted != null)
-                    OnTestMethodCompleted("Secondary Read", this);
+                CurrentReport.Stop();
 
                 task = null;
-                ActiveReport = null;
+                CurrentReport = null;
             }
         }
 
@@ -246,17 +206,16 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
                 return;
             }
 
-            ActiveReport = Reports[SECONDARY_READ];
-            ActiveReport.Start();
+            CurrentReport = Reports[SECONDARY_READ];
+            CurrentReport.Start();
 
             try
             {
                 Database.Finish();
-                EndTime = DateTime.Now;
             }
             finally
             {
-                ActiveReport.Stop();
+                CurrentReport.Stop();
             }
         }
 
