@@ -12,14 +12,15 @@ namespace DatabaseBenchmark.Core.Statistics
         public event Action<PerformanceWatch> OnStart;
         public event Action<PerformanceWatch> OnStop;
 
-        public string Name { get; }
+        private string name;
+        public string Name { get { return name; } }
 
         public SpeedStatistics SpeedStatistics { get; set; }
         public MemoryStatistics MemoryStatistics { get; set; }
 
         public PerformanceWatch(string name, int step)
         {
-            Name = name;
+            this.name = name;
 
             SpeedStatistics = new SpeedStatistics(Benchmark.INTERVAL_COUNT, step);
             MemoryStatistics = new MemoryStatistics(Benchmark.INTERVAL_COUNT, step);
