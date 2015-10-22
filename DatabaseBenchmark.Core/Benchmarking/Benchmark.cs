@@ -18,8 +18,8 @@ namespace DatabaseBenchmark.Core.Benchmarking
 
         private ILog Logger;
 
-        public event Action<PerformanceWatch> OnStart;
-        public event Action<PerformanceWatch> OnStop;
+        public event Action<PerformanceReport> OnStart;
+        public event Action<PerformanceReport> OnStop;
       
         public ITest CurrentTest { get; private set; }
 
@@ -126,12 +126,12 @@ namespace DatabaseBenchmark.Core.Benchmarking
             }
         }
 
-        private void LogOnStart(PerformanceWatch report)
+        private void LogOnStart(PerformanceReport report)
         {
             Logger.Info(String.Format("{0} started.", report.Name));
         }
 
-        private void LogOnStop(PerformanceWatch report)
+        private void LogOnStop(PerformanceReport report)
         {
             Logger.Info(String.Format("{0} stopped.", report.Name));
         }

@@ -7,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace DatabaseBenchmark.Core.Statistics
 {
-    public class PerformanceWatch
+    /// <summary>
+    /// Provides simple statistics - elapsed time, average speed, moment speed as well
+    /// as memory usage - paged, virtual and working set.
+    /// </summary>
+    public class PerformanceReport
     {
-        public event Action<PerformanceWatch> OnStart;
-        public event Action<PerformanceWatch> OnStop;
+        public event Action<PerformanceReport> OnStart;
+        public event Action<PerformanceReport> OnStop;
 
         private string name;
         public string Name { get { return name; } }
@@ -18,7 +22,7 @@ namespace DatabaseBenchmark.Core.Statistics
         public SpeedStatistics SpeedStatistics { get; set; }
         public MemoryStatistics MemoryStatistics { get; set; }
 
-        public PerformanceWatch(string name, int step)
+        public PerformanceReport(string name, int step)
         {
             this.name = name;
 
@@ -26,7 +30,7 @@ namespace DatabaseBenchmark.Core.Statistics
             MemoryStatistics = new MemoryStatistics(Benchmark.INTERVAL_COUNT, step);
         }
 
-        public PerformanceWatch()
+        public PerformanceReport()
             : this(String.Empty, 1)
         {
         }

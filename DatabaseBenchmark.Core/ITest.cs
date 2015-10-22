@@ -30,17 +30,17 @@ namespace DatabaseBenchmark.Core
         /// <summary>
         /// A set of reports.
         /// </summary>
-        List<PerformanceWatch> Reports { get; }
+        List<PerformanceReport> Reports { get; }
 
         /// <summary>
-        /// The currentyl active report.
+        /// The currently active report.
         /// </summary>
-        PerformanceWatch ActiveReport { get; }
+        PerformanceReport ActiveReport { get; }
 
         /// <summary>
         /// Starts the test.
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        void Start(CancellationToken cancellationToken);
+        /// <param name="token"></param>
+        void Start(CancellationToken token);
     }
 }

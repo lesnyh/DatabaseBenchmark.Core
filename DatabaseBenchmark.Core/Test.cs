@@ -16,8 +16,8 @@ namespace DatabaseBenchmark.Core
         public virtual string Description { get; protected set; }
         public virtual string Status { get; protected set; }
 
-        public List<PerformanceWatch> Reports { get; protected set; }
-        public PerformanceWatch ActiveReport { get; protected set; }
+        public List<PerformanceReport> Reports { get; protected set; }
+        public PerformanceReport ActiveReport { get; protected set; }
 
         public abstract void Start(CancellationToken cancellationToken);
     }

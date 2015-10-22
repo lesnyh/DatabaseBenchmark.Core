@@ -58,11 +58,11 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
             Logger = LogManager.GetLogger(Settings.Default.TestLogger);
 
             int step = (int)((recordCount) / Benchmark.INTERVAL_COUNT);
-            Reports = new List<PerformanceWatch>();
+            Reports = new List<PerformanceReport>();
 
-            Reports.Add(new PerformanceWatch("Full Write", step));
-            Reports.Add(new PerformanceWatch("Full Read", step));
-            Reports.Add(new PerformanceWatch("Full Secondary Read", step));
+            Reports.Add(new PerformanceReport("Full Write", step));
+            Reports.Add(new PerformanceReport("Full Read", step));
+            Reports.Add(new PerformanceReport("Full Secondary Read", step));
         }
 
         public FullWriteReadTest()
@@ -221,7 +221,7 @@ namespace DatabaseBenchmark.Core.Benchmarking.Tests
         /// <summary>
         /// Wraps a data flow to check cancellation token and accumulate some statistic.
         /// </summary>
-        private IEnumerable<KeyValuePair<long, Tick>> Wrap(IEnumerable<KeyValuePair<long, Tick>> flow, IEnumerable<PerformanceWatch> statistics, CancellationToken token)
+        private IEnumerable<KeyValuePair<long, Tick>> Wrap(IEnumerable<KeyValuePair<long, Tick>> flow, IEnumerable<PerformanceReport> statistics, CancellationToken token)
         {
             foreach (var kv in flow)
             {
