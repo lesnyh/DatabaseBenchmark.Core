@@ -97,7 +97,7 @@ namespace DatabaseBenchmark.Core.Tests
                 ActiveReport = Reports[WRITE];
                 ActiveReport.Start();
 
-                Database.Init(FlowCount, RecordCount);
+                Database.Open(FlowCount, RecordCount);
             }
             finally
             {
@@ -194,7 +194,7 @@ namespace DatabaseBenchmark.Core.Tests
 
             try
             {
-                Database.Finish();
+                Database.Close();
             }
             finally
             {

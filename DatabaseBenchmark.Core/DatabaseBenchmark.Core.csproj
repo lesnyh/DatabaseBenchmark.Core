@@ -272,6 +272,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Benchmark.cs" />
+    <Compile Include="ITable.cs" />
     <Compile Include="Tests\FullWriteReadTest.cs" />
     <Compile Include="ITest.cs" />
     <Compile Include="Database.cs" />

@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using DatabaseBenchmark.Core.Attributes;
+using System.Collections;
+using System;
 
 namespace DatabaseBenchmark.Databases
 {
@@ -46,7 +48,7 @@ namespace DatabaseBenchmark.Databases
             CacheSize = 64;
         }
 
-        public override void Init(int flowCount, long flowRecordCount)
+        public override void Open(int flowCount, long flowRecordCount)
         {
             engine = InMemoryDatabase ? STSdb4.Database.STSdb.FromMemory() : STSdb4.Database.STSdb.FromFile(Path.Combine(DataDirectory, "test.stsdb4"));
             ((StorageEngine)engine).CacheSize = CacheSize;
@@ -70,9 +72,69 @@ namespace DatabaseBenchmark.Databases
             return engine.OpenXTable<long, Tick>(CollectionName).Forward();
         }
 
-        public override void Finish()
+        public override void Close()
         {
             engine.Close();
+        }
+    }
+
+    public class Table : DatabaseBenchmark.Core.ITable<long, Tick>
+    {
+        private string name;
+        private IDatabase database;
+        private STSdb4.Database.ITable<long, Tick> table;
+
+        public string Name
+        {
+            get { return name; }
+        }
+
+        public IDatabase Database
+        {
+            get { return database; }
+        }
+
+        public Table(string name)
+        {
+            this.name = name;
+        }
+
+        public void Write(IEnumerable<KeyValuePair<long, Tick>> records)
+        {
+            foreach (var record in records)
+                table[record.Key] = record.Value;
+        }
+
+        public IEnumerable<KeyValuePair<long, Tick>> Read(long from, long to)
+        {
+            return table.Forward(from, true, to, true);
+        }
+
+        public Tick this[long key]
+        {
+            get
+            {
+                return table[key];
+            }
+            set
+            {
+                table[key] = value;
+            }
+        }
+
+        public void Close()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<KeyValuePair<long, Tick>> GetEnumerator()
+        {
+            return table.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
