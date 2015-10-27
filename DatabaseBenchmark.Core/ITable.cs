@@ -21,19 +21,34 @@ namespace DatabaseBenchmark.Core
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="records"></param>
         void Write(IEnumerable<KeyValuePair<TKey, TRecord>> records);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
         IEnumerable<KeyValuePair<TKey, TRecord>> Read(TKey from, TKey to);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        IEnumerable<KeyValuePair<TKey, TRecord>> Read();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void Delete(TKey key);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void Delete(TKey from, TKey to);
 
         TRecord this[TKey key] { get; set; }
         
+        /// <summary>
+        /// 
+        /// </summary>
         void Close();
     }
 }

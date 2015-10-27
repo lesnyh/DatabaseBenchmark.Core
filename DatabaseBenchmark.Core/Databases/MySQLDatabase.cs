@@ -105,58 +105,58 @@ namespace DatabaseBenchmark.Databases
             return helper;
         }
 
-        public override void Open(int flowCount, long flowRecordCount)
-        {
-            connections = new IDbConnection[flowCount];
-            helpers = new SQLMultiInsert[flowCount];
+        //public override void Open(int flowCount, long flowRecordCount)
+        //{
+        //    connections = new IDbConnection[flowCount];
+        //    helpers = new SQLMultiInsert[flowCount];
 
-            for (int i = 0; i < flowCount; i++)
-            {
-                var connection = GetConnection();
-                connections[i] = connection;
+        //    for (int i = 0; i < flowCount; i++)
+        //    {
+        //        var connection = GetConnection();
+        //        connections[i] = connection;
 
-                helpers[i] = GetInsertHelper(connection);
-            }
+        //        helpers[i] = GetInsertHelper(connection);
+        //    }
 
-            connections.First().ExecuteNonQuery(String.Format("DROP TABLE IF EXISTS `{0}`;", CollectionName));
-            connections.First().ExecuteNonQuery(CreateTableQuery());
-        }
+        //    connections.First().ExecuteNonQuery(String.Format("DROP TABLE IF EXISTS `{0}`;", CollectionName));
+        //    connections.First().ExecuteNonQuery(CreateTableQuery());
+        //}
 
-        public override void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow)
-        {
-            var helper = helpers[flowID];
+        //public override void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow)
+        //{
+        //    var helper = helpers[flowID];
 
-            foreach (var kv in flow)
-            {
-                var key = kv.Key;
-                var rec = kv.Value;
+        //    foreach (var kv in flow)
+        //    {
+        //        var key = kv.Key;
+        //        var rec = kv.Value;
 
-                helper.Insert(key, rec.Symbol, rec.Timestamp, rec.Bid, rec.Ask, rec.BidSize, rec.AskSize, rec.Provider);
-            }
+        //        helper.Insert(key, rec.Symbol, rec.Timestamp, rec.Bid, rec.Ask, rec.BidSize, rec.AskSize, rec.Provider);
+        //    }
 
-            helper.Flush();
-        }
+        //    helper.Flush();
+        //}
 
-        public override IEnumerable<KeyValuePair<long, Tick>> Read()
-        {
-            IDataReader reader = connections.First().ExecuteQuery(String.Format("SELECT * FROM {0} ORDER BY {1};", CollectionName, "ID"));
+        //public override IEnumerable<KeyValuePair<long, Tick>> Read()
+        //{
+        //    IDataReader reader = connections.First().ExecuteQuery(String.Format("SELECT * FROM {0} ORDER BY {1};", CollectionName, "ID"));
 
-            foreach (var row in reader.Forward())
-            {
-                long key = row.GetInt64(0);
+        //    foreach (var row in reader.Forward())
+        //    {
+        //        long key = row.GetInt64(0);
 
-                Tick tick = new Tick();
-                tick.Symbol = row.GetString(1);
-                tick.Timestamp = row.GetDateTime(2);
-                tick.Bid = row.GetDouble(3);
-                tick.Ask = row.GetDouble(4);
-                tick.BidSize = row.GetInt32(5);
-                tick.AskSize = row.GetInt32(6);
-                tick.Provider = row.GetString(7);
+        //        Tick tick = new Tick();
+        //        tick.Symbol = row.GetString(1);
+        //        tick.Timestamp = row.GetDateTime(2);
+        //        tick.Bid = row.GetDouble(3);
+        //        tick.Ask = row.GetDouble(4);
+        //        tick.BidSize = row.GetInt32(5);
+        //        tick.AskSize = row.GetInt32(6);
+        //        tick.Provider = row.GetString(7);
 
-                yield return new KeyValuePair<long, Tick>(key, tick);
-            }
-        }
+        //        yield return new KeyValuePair<long, Tick>(key, tick);
+        //    }
+        //}
 
         public override void Close()
         {
@@ -196,6 +196,21 @@ namespace DatabaseBenchmark.Databases
                     conn.Close();
                 }
             }
+        }
+
+        public override void Open()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ITable<long, Tick> OpenOrCreateTable(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void DeleteTable(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }

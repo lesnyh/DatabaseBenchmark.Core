@@ -75,6 +75,8 @@ namespace DatabaseBenchmark.Databases
 
     public class Table : DatabaseBenchmark.Core.ITable<long, Tick>
     {
+        private readonly object SyncRoot = new object();
+
         private string name;
         private IDatabase database;
 
@@ -102,15 +104,33 @@ namespace DatabaseBenchmark.Databases
 
         public void Write(IEnumerable<KeyValuePair<long, Tick>> records)
         {
-            foreach (var record in records)
-                table[record.Key] = record.Value;
+            lock (SyncRoot)
+            {
+                foreach (var record in records)
+                    table[record.Key] = record.Value;
 
-            engine.Commit();
+                engine.Commit();
+            }
         }
 
         public IEnumerable<KeyValuePair<long, Tick>> Read(long from, long to)
         {
             return table.Forward(from, true, to, true);
+        }
+
+        public IEnumerable<KeyValuePair<long, Tick>> Read()
+        {
+            return table.Forward();
+        }
+
+        public void Delete(long key)
+        {
+            table.Delete(key);
+        }
+
+        public void Delete(long from ,long to)
+        {
+            table.Delete(from, to);
         }
 
         public Tick this[long key]
