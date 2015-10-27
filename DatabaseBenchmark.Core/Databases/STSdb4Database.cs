@@ -16,7 +16,7 @@ namespace DatabaseBenchmark.Databases
     public class STSdb4Database : Database
     {
         private IStorageEngine engine;
-        private ITable<long, Tick> table;
+        private DatabaseBenchmark.Core.ITable<long, Tick> table;
 
         [Category("Settings")]
         [DbParameter]
@@ -29,6 +29,7 @@ namespace DatabaseBenchmark.Databases
         {
             get { return "WaterfallTree"; }
         }
+
         public STSdb4Database()
         {
             SyncRoot = new object();
@@ -48,28 +49,22 @@ namespace DatabaseBenchmark.Databases
             CacheSize = 64;
         }
 
-        public override void Open(int flowCount, long flowRecordCount)
+        public override void Open()
         {
             engine = InMemoryDatabase ? STSdb4.Database.STSdb.FromMemory() : STSdb4.Database.STSdb.FromFile(Path.Combine(DataDirectory, "test.stsdb4"));
             ((StorageEngine)engine).CacheSize = CacheSize;
 
-            table = engine.OpenXTable<long, Tick>(CollectionName);
+            table = new Table(CollectionName, this, engine);
         }
 
-        public override void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow)
+        public override Core.ITable<long, Tick> OpenOrCreateTable(string name)
         {
-            lock (SyncRoot)
-            {
-                foreach (var kv in flow)
-                    table[kv.Key] = kv.Value;
-
-                engine.Commit();
-            }
+            return new Table(name, this, engine);
         }
 
-        public override IEnumerable<KeyValuePair<long, Tick>> Read()
+        public override void DeleteTable(string name)
         {
-            return engine.OpenXTable<long, Tick>(CollectionName).Forward();
+            engine.Delete(name);
         }
 
         public override void Close()
@@ -82,6 +77,8 @@ namespace DatabaseBenchmark.Databases
     {
         private string name;
         private IDatabase database;
+
+        private IStorageEngine engine;
         private STSdb4.Database.ITable<long, Tick> table;
 
         public string Name
@@ -94,15 +91,21 @@ namespace DatabaseBenchmark.Databases
             get { return database; }
         }
 
-        public Table(string name)
+        public Table(string name, IDatabase database, IStorageEngine engine)
         {
             this.name = name;
+            this.database = database;
+            this.engine = engine;
+
+            table = engine.OpenXTable<long, Tick>(name);
         }
 
         public void Write(IEnumerable<KeyValuePair<long, Tick>> records)
         {
             foreach (var record in records)
                 table[record.Key] = record.Value;
+
+            engine.Commit();
         }
 
         public IEnumerable<KeyValuePair<long, Tick>> Read(long from, long to)
@@ -124,7 +127,6 @@ namespace DatabaseBenchmark.Databases
 
         public void Close()
         {
-            throw new NotImplementedException();
         }
 
         public IEnumerator<KeyValuePair<long, Tick>> GetEnumerator()

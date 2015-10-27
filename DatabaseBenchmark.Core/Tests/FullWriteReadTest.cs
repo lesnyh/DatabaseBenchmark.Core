@@ -21,6 +21,7 @@ namespace DatabaseBenchmark.Core.Tests
 
         private ILog Logger;
         private CancellationToken Cancellation;
+        private string TableName;
 
         #region ITest Members
 
@@ -97,7 +98,10 @@ namespace DatabaseBenchmark.Core.Tests
                 ActiveReport = Reports[WRITE];
                 ActiveReport.Start();
 
-                Database.Open(FlowCount, RecordCount);
+                Database.Open();
+
+                Database.DeleteTable(TableName);
+                Database.OpenOrCreateTable(TableName);
             }
             finally
             {

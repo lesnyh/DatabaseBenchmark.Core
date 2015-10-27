@@ -23,10 +23,12 @@ namespace DatabaseBenchmark.Core
 
         [XmlIgnore]
         public Color Color { get; set; }
-        
-        public abstract void Open(int flowCount, long flowRecordCount);
-        public abstract void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow);
-        public abstract IEnumerable<KeyValuePair<long, Tick>> Read();
+
+        public ITable<long, Tick>[] Tables { get; set; }
+
+        public abstract void Open();
+        public abstract ITable<long, Tick> OpenOrCreateTable(string name);
+        public abstract void DeleteTable(string name);
         public abstract void Close();
         
         public virtual string IndexingTechnology
@@ -38,27 +40,6 @@ namespace DatabaseBenchmark.Core
         public virtual long Size
         {
             get { return Directory.GetFiles(DataDirectory, "*.*", SearchOption.AllDirectories).Sum(x => (new FileInfo(x)).Length); }
-        }
-
-
-        public ITable<long, Tick>[] Tables
-        {
-            get { throw new System.NotImplementedException(); }
-        }
-
-        public void Open()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public ITable<long, Tick> OpenOrCreateTable(string name)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void DeleteTable(string name)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }
