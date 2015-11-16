@@ -8,13 +8,15 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using DatabaseBenchmark.Core.Attributes;
+using System.Collections;
+using System;
 
 namespace DatabaseBenchmark.Databases
 {
     public class STSdb4Database : Database
     {
         private IStorageEngine engine;
-        private ITable<long, Tick> table;
+        private DatabaseBenchmark.Core.ITable<long, Tick> table;
 
         [Category("Settings")]
         [DbParameter]
@@ -27,6 +29,7 @@ namespace DatabaseBenchmark.Databases
         {
             get { return "WaterfallTree"; }
         }
+
         public STSdb4Database()
         {
             SyncRoot = new object();
@@ -46,33 +49,114 @@ namespace DatabaseBenchmark.Databases
             CacheSize = 64;
         }
 
-        public override void Init(int flowCount, long flowRecordCount)
+        public override void Open()
         {
             engine = InMemoryDatabase ? STSdb4.Database.STSdb.FromMemory() : STSdb4.Database.STSdb.FromFile(Path.Combine(DataDirectory, "test.stsdb4"));
             ((StorageEngine)engine).CacheSize = CacheSize;
 
-            table = engine.OpenXTable<long, Tick>(CollectionName);
+            table = new Table(CollectionName, this, engine);
         }
 
-        public override void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow)
+        public override Core.ITable<long, Tick> OpenOrCreateTable(string name)
+        {
+            return new Table(name, this, engine);
+        }
+
+        public override void DeleteTable(string name)
+        {
+            engine.Delete(name);
+        }
+
+        public override void Close()
+        {
+            engine.Close();
+        }
+    }
+
+    public class Table : DatabaseBenchmark.Core.ITable<long, Tick>
+    {
+        private readonly object SyncRoot = new object();
+
+        private string name;
+        private IDatabase database;
+
+        private IStorageEngine engine;
+        private STSdb4.Database.ITable<long, Tick> table;
+
+        public string Name
+        {
+            get { return name; }
+        }
+
+        public IDatabase Database
+        {
+            get { return database; }
+        }
+
+        public Table(string name, IDatabase database, IStorageEngine engine)
+        {
+            this.name = name;
+            this.database = database;
+            this.engine = engine;
+
+            table = engine.OpenXTable<long, Tick>(name);
+        }
+
+        public void Write(IEnumerable<KeyValuePair<long, Tick>> records)
         {
             lock (SyncRoot)
             {
-                foreach (var kv in flow)
-                    table[kv.Key] = kv.Value;
+                foreach (var record in records)
+                    table[record.Key] = record.Value;
 
                 engine.Commit();
             }
         }
 
-        public override IEnumerable<KeyValuePair<long, Tick>> Read()
+        public IEnumerable<KeyValuePair<long, Tick>> Read(long from, long to)
         {
-            return engine.OpenXTable<long, Tick>(CollectionName).Forward();
+            return table.Forward(from, true, to, true);
         }
 
-        public override void Finish()
+        public IEnumerable<KeyValuePair<long, Tick>> Read()
         {
-            engine.Close();
+            return table.Forward();
+        }
+
+        public void Delete(long key)
+        {
+            table.Delete(key);
+        }
+
+        public void Delete(long from ,long to)
+        {
+            table.Delete(from, to);
+        }
+
+        public Tick this[long key]
+        {
+            get
+            {
+                return table[key];
+            }
+            set
+            {
+                table[key] = value;
+            }
+        }
+
+        public void Close()
+        {
+        }
+
+        public IEnumerator<KeyValuePair<long, Tick>> GetEnumerator()
+        {
+            return table.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

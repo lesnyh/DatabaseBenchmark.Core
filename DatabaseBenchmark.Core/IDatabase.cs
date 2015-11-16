@@ -65,27 +65,23 @@ namespace DatabaseBenchmark.Core
 
         #endregion
 
+        ITable<long, Tick>[] Tables { get; }
+
         #region Database Methods
 
         /// <summary>
         /// Initialize and create the database - create configuration files, engines and etc.
         /// </summary>
-        void Init(int flowCount, long flowRecordCount);
+        void Open();
 
-        /// <summary>
-        /// Begin writing records into the database. Multiple threads invoke this method (one for each flow).
-        /// </summary>
-        void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow);
+        ITable<long, Tick> OpenOrCreateTable(string name);
 
-        /// <summary>
-        /// Begin reading the records from the database in a single thread. The tick flow must be returned in ascending by key order.
-        /// </summary>
-        IEnumerable<KeyValuePair<long, Tick>> Read();
+        void DeleteTable(string name);
 
         /// <summary>
         /// Close the database.
         /// </summary>
-        void Finish();
+        void Close();
 
         /// <summary>
         /// Returns the size of the database in bytes. 

@@ -22,6 +22,9 @@ namespace DatabaseBenchmark.Core.Tests
         private ILog Logger;
         private CancellationToken Cancellation;
 
+        private ITable<long, Tick> Table;
+        private string TableName;
+
         #region ITest Members
 
         public override string Name
@@ -36,13 +39,13 @@ namespace DatabaseBenchmark.Core.Tests
 
         #endregion
 
-        public int FlowCount { get; private set; }
-        public long RecordCount { get; private set; }
+        public int FlowCount { get; set; }
+        public long RecordCount { get; set; }
 
-        public float Randomness { get; private set; }
+        public float Randomness { get; set; }
 
-        public long DatabaseSize { get; private set; }
-        public long RecordsRead { get; private set; }
+        public long DatabaseSize { get; set; }
+        public long RecordsRead { get; set; }
 
         public FullWriteReadTest(IDatabase database, int flowCount, long recordCount, float randomness, CancellationToken cancellation)
         {
@@ -61,6 +64,8 @@ namespace DatabaseBenchmark.Core.Tests
             Reports.Add(new PerformanceReport("Full Write", step));
             Reports.Add(new PerformanceReport("Full Read", step));
             Reports.Add(new PerformanceReport("Full Secondary Read", step));
+
+            TableName = "Table1";
         }
 
         public FullWriteReadTest()
@@ -97,7 +102,10 @@ namespace DatabaseBenchmark.Core.Tests
                 ActiveReport = Reports[WRITE];
                 ActiveReport.Start();
 
-                Database.Init(FlowCount, RecordCount);
+                Database.Open();
+
+                Database.DeleteTable(TableName);
+                Table = Database.OpenOrCreateTable(TableName);
             }
             finally
             {
@@ -194,7 +202,7 @@ namespace DatabaseBenchmark.Core.Tests
 
             try
             {
-                Database.Finish();
+                Database.Close();
             }
             finally
             {
@@ -247,7 +255,7 @@ namespace DatabaseBenchmark.Core.Tests
                     int index = (int)state;
                     var flow = Wrap(flows[index], Reports, Cancellation);
 
-                    Database.Write(index, flow);
+                    Table.Write(flow);
 
                 }), i, Cancellation, TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
@@ -259,7 +267,7 @@ namespace DatabaseBenchmark.Core.Tests
         {
             Task task = Task.Factory.StartNew((Action)(() =>
             {
-                var flow = Wrap(Database.Read(), Reports, Cancellation);
+                var flow = Wrap(Table.Read(), Reports, Cancellation);
 
                 long count = 0;
                 RecordsRead = 0;

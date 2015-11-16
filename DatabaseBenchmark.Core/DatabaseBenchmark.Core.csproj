@@ -272,6 +272,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Benchmark.cs" />
+    <Compile Include="ITable.cs" />
     <Compile Include="Tests\FullWriteReadTest.cs" />
     <Compile Include="ITest.cs" />
     <Compile Include="Database.cs" />
@@ -294,7 +295,6 @@
     <Compile Include="Databases\MySQLInnoDBDatabase.cs" />
     <Compile Include="Databases\MySQLMemoryDatabase.cs" />
     <Compile Include="Databases\MySQLMyIsamDatabase.cs" />
-    <Compile Include="Databases\MySQLNoTree.cs" />
     <Compile Include="Databases\MySQLTokuDBDatabase.cs" />
     <Compile Include="Databases\OrientDBDatabase.cs" />
     <Compile Include="Databases\PerstDatabase.cs" />
@@ -302,7 +302,6 @@
     <Compile Include="Databases\RavenDBDatabase.cs" />
     <Compile Include="Databases\RedisDatabase.cs" />
     <Compile Include="Databases\ScimoreDBDatabase.cs" />
-    <Compile Include="Databases\SequentalDatabase.cs" />
     <Compile Include="Databases\SQLiteDatabase.cs" />
     <Compile Include="Databases\STSdb4Database.cs" />
     <Compile Include="Databases\STSdbDatabase.cs" />
