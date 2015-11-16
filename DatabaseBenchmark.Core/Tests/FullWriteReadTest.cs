@@ -39,13 +39,13 @@ namespace DatabaseBenchmark.Core.Tests
 
         #endregion
 
-        public int FlowCount { get; private set; }
-        public long RecordCount { get; private set; }
+        public int FlowCount { get; set; }
+        public long RecordCount { get; set; }
 
-        public float Randomness { get; private set; }
+        public float Randomness { get; set; }
 
-        public long DatabaseSize { get; private set; }
-        public long RecordsRead { get; private set; }
+        public long DatabaseSize { get; set; }
+        public long RecordsRead { get; set; }
 
         public FullWriteReadTest(IDatabase database, int flowCount, long recordCount, float randomness, CancellationToken cancellation)
         {
