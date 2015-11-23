@@ -269,6 +269,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\Volante.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data.LinterClient">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\System.Data.LinterClient.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Benchmark.cs" />
@@ -286,6 +290,7 @@
     <Compile Include="Databases\FirebirdDatabase.cs" />
     <Compile Include="Databases\HamsterDBDatabase.cs" />
     <Compile Include="Databases\LevelDBDatabase.cs" />
+    <Compile Include="Databases\LinterDatabase.cs" />
     <Compile Include="Databases\MongoDBDatabase.cs" />
     <Compile Include="Databases\MSSQLServerCompactDatabase.cs" />
     <Compile Include="Databases\MSSQLServerDatabase.cs" />
@@ -388,6 +393,7 @@ if exist %25drive%25 (
    xcopy /d /y /r "%25source%25\RavenDB\RavenDB-Build-3528\Client\Raven.Client.Lightweight.dll" "$(TargetDir)"
    xcopy /d /y /r "%25source%25\Siaqodb\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25source%25\RedisDB\%25target%25\*.dll" "$(TargetDir)"
+   xcopy /d /y /r "%25source%25\Linter\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25thirdParty%25\log4net\1.2.13\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25thirdParty%25\Json for .NET 1.2\*.dll" "$(TargetDir)"
    xcopy /d /y /r "%25thirdParty%25\DockingSuite\2.9.0\*.dll" "$(TargetDir)"
