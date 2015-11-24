@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.LinterClient;
-using System.Xml.Serialization;
+using DatabaseBenchmark.Core;
 using STS.General.Generators;
 using STS.General.SQL.Extensions;
 
@@ -10,13 +11,12 @@ namespace DatabaseBenchmark.Databases
 {
     public class LinterDatabase : Database
     {
-        private IDbConnection initConnection;
-        private IDbConnection[] flowConnections;
-        private IDbCommand[] flowCommands;
+        private LinterDbConnection connection;
+        private LinterTable table;
 
-        public override IndexingTechnology IndexingTechnology
+        public override string IndexingTechnology
         {
-            get { return IndexingTechnology.BTree; }
+            get { return "BTree"; }
         }
 
         public LinterDatabase()
@@ -32,136 +32,253 @@ namespace DatabaseBenchmark.Databases
 
             Requirements = new string[]
             { 
+                "inter325.dll",
+                "dectic32.dll",
                 "System.Data.LinterClient.dll"
             };
         }
 
-        public string GetDefaultConnectionString()
+        public override void Open()
         {
-            LinterDbConnectionStringBuilder builder = new LinterDbConnectionStringBuilder();
+            var builder = new LinterDbConnectionStringBuilder();
             builder.DataSource = "LOCAL";
             builder.UserID = "SYSTEM";
             builder.Password = "MANAGER";
+            ConnectionString = builder.ConnectionString;
 
-            return builder.ConnectionString;
+            connection = new LinterDbConnection(ConnectionString);
+            connection.Open();
         }
 
-        private LinterDbConnection GetConnection()
+        public override ITable<long, Tick> OpenOrCreateTable(string name)
         {
-            LinterDbConnection conn = new LinterDbConnection(ConnectionString);
-            conn.Open();
-
-            return conn;
+            table = new LinterTable(name, this, connection);
+            table.CreateTable();
+            table.CreateWriteCommand();
+            return table;
         }
 
-        public override void Init(int flowCount, long flowRecordCount)
+        public override void DeleteTable(string name)
         {
-            ConnectionString = GetDefaultConnectionString();
-            flowConnections = new IDbConnection[flowCount];
-            flowCommands = new IDbCommand[flowCount];
-
-            initConnection = GetConnection();
-            initConnection.ExecuteNonQuery(CreateTableQuery(CollectionName));
-
-            for (int i = 0; i < flowCount; i++)
-            {
-                LinterDbConnection connection = GetConnection();
-                flowConnections[i] = connection;
-
-                if (connection.State == ConnectionState.Closed)
-                    connection.Open();
-
-                flowCommands[i] = CreateCommand(connection);
-            }
+            table.DropTable();
         }
 
-        public override void Write(int flowID, IEnumerable<KeyValuePair<long, Tick>> flow)
+        public override void Close()
+        {
+            connection.Close();
+        }
+    }
+
+    public class LinterTable : ITable<long, Tick>
+    {
+        private readonly object SyncRoot = new object();
+
+        private string name;
+        private IDatabase database;
+        private LinterDbConnection connection;
+        private LinterDbCommand writeCommand;
+
+        public string Name
+        {
+            get { return name; }
+        }
+
+        public IDatabase Database
+        {
+            get { return database; }
+        }
+
+        public LinterTable(string name, IDatabase database, LinterDbConnection connection)
+        {
+            this.name = name;
+            this.database = database;
+            this.connection = connection;
+        }
+
+        public void Write(IEnumerable<KeyValuePair<long, Tick>> records)
         {
             lock (SyncRoot)
             {
-                IDbCommand command = flowCommands[flowID];
-
-                foreach (KeyValuePair<long, Tick> kv in flow)
+                foreach (KeyValuePair<long, Tick> kv in records)
                 {
                     long key = kv.Key;
-                    Tick rec = kv.Value;
+                    Tick tick = kv.Value;
 
-                    ((IDbDataParameter)command.Parameters[0]).Value = key;
-                    ((IDbDataParameter)command.Parameters[1]).Value = rec.Symbol;
-                    ((IDbDataParameter)command.Parameters[2]).Value = rec.Timestamp;
-                    ((IDbDataParameter)command.Parameters[3]).Value = rec.Bid;
-                    ((IDbDataParameter)command.Parameters[4]).Value = rec.Ask;
-                    ((IDbDataParameter)command.Parameters[5]).Value = rec.BidSize;
-                    ((IDbDataParameter)command.Parameters[6]).Value = rec.AskSize;
-                    ((IDbDataParameter)command.Parameters[7]).Value = rec.Provider;
+                    writeCommand.Parameters[0].Value = key;
+                    writeCommand.Parameters[1].Value = tick.Symbol;
+                    writeCommand.Parameters[2].Value = tick.Timestamp;
+                    writeCommand.Parameters[3].Value = tick.Bid;
+                    writeCommand.Parameters[4].Value = tick.Ask;
+                    writeCommand.Parameters[5].Value = tick.BidSize;
+                    writeCommand.Parameters[6].Value = tick.AskSize;
+                    writeCommand.Parameters[7].Value = tick.Provider;
 
-                    command.ExecuteNonQuery();
+                    writeCommand.ExecuteNonQuery();
                 }
             }
         }
 
-        public override IEnumerable<KeyValuePair<long, Tick>> Read()
+        public IEnumerable<KeyValuePair<long, Tick>> Read(long from, long to)
         {
-            IDataReader reader = flowConnections[0].ExecuteQuery(String.Format(
-                "SELECT * FROM {0} ORDER BY {1};", CollectionName, "ID"));
+            LinterDbCommand command = connection.CreateCommand();
+            command.CommandText = String.Format(
+                "SELECT * FROM {0} " +
+                "WHERE ID >= {1} AND ID <= {2} " +
+                "ORDER BY ID", name, from, to);
 
-            foreach (IDataRecord row in reader.Forward())
+            using (LinterDbDataReader reader = command.ExecuteReader())
             {
-                long key = row.GetInt64(0);
+                while (reader.Read())
+                {
+                    long key = reader.GetInt64(0);
 
-                Tick tick = new Tick();
-                tick.Symbol = row.GetString(1);
-                tick.Timestamp = row.GetDateTime(2);
-                tick.Bid = row.GetDouble(3);
-                tick.Ask = row.GetDouble(4);
-                tick.BidSize = row.GetInt32(5);
-                tick.AskSize = row.GetInt32(6);
-                tick.Provider = row.GetString(7);
+                    Tick tick = new Tick();
+                    tick.Symbol = reader.GetString(1);
+                    tick.Timestamp = reader.GetDateTime(2);
+                    tick.Bid = reader.GetDouble(3);
+                    tick.Ask = reader.GetDouble(4);
+                    tick.BidSize = reader.GetInt32(5);
+                    tick.AskSize = reader.GetInt32(6);
+                    tick.Provider = reader.GetString(7);
 
-                yield return new KeyValuePair<long, Tick>(key, tick);
-            }
-
-            reader.Close();
-        }
-
-        public override void Finish()
-        {
-            initConnection.Close();
-            for (int i = 0; i < flowConnections.Length; i++)
-            {
-                flowConnections[i].Close();
+                    yield return new KeyValuePair<long, Tick>(key, tick);
+                }
             }
         }
 
-        [XmlIgnore]
-        public override Dictionary<string, string> Settings
+        public IEnumerable<KeyValuePair<long, Tick>> Read()
+        {
+            LinterDbCommand command = connection.CreateCommand();
+            command.CommandText = String.Format(
+                "SELECT * FROM {0} " +
+                "ORDER BY ID", name);
+
+            using (LinterDbDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    long key = reader.GetInt64(0);
+
+                    Tick tick = new Tick();
+                    tick.Symbol = reader.GetString(1);
+                    tick.Timestamp = reader.GetDateTime(2);
+                    tick.Bid = reader.GetDouble(3);
+                    tick.Ask = reader.GetDouble(4);
+                    tick.BidSize = reader.GetInt32(5);
+                    tick.AskSize = reader.GetInt32(6);
+                    tick.Provider = reader.GetString(7);
+
+                    yield return new KeyValuePair<long, Tick>(key, tick);
+                }
+            }
+        }
+
+        public void Delete(long key)
+        {
+            LinterDbCommand command = connection.CreateCommand();
+            command.CommandText = String.Format(
+                "DELETE FROM {0} " +
+                "WHERE ID = {1}", name, key);
+            command.ExecuteNonQuery();
+        }
+
+        public void Delete(long from, long to)
+        {
+            LinterDbCommand command = connection.CreateCommand();
+            command.CommandText = String.Format(
+                "DELETE FROM {0} " +
+                "WHERE ID >= {1} AND ID <= {2}", name, from, to);
+            command.ExecuteNonQuery();
+        }
+
+        public Tick this[long key]
         {
             get
             {
-                return null;
+                LinterDbCommand command = connection.CreateCommand();
+                command.CommandText = String.Format(
+                    "SELECT * FROM {0} " +
+                    "WHERE ID = {1}", name, key);
+
+                using (LinterDbDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        Tick tick = new Tick();
+                        tick.Symbol = reader.GetString(1);
+                        tick.Timestamp = reader.GetDateTime(2);
+                        tick.Bid = reader.GetDouble(3);
+                        tick.Ask = reader.GetDouble(4);
+                        tick.BidSize = reader.GetInt32(5);
+                        tick.AskSize = reader.GetInt32(6);
+                        tick.Provider = reader.GetString(7);
+                        return tick;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            set
+            {
+                lock (SyncRoot)
+                {
+                    writeCommand.Parameters[0].Value = key;
+                    writeCommand.Parameters[1].Value = value.Symbol;
+                    writeCommand.Parameters[2].Value = value.Timestamp;
+                    writeCommand.Parameters[3].Value = value.Bid;
+                    writeCommand.Parameters[4].Value = value.Ask;
+                    writeCommand.Parameters[5].Value = value.BidSize;
+                    writeCommand.Parameters[6].Value = value.AskSize;
+                    writeCommand.Parameters[7].Value = value.Provider;
+
+                    writeCommand.ExecuteNonQuery();
+                }
             }
         }
 
-        private IDbCommand CreateCommand(IDbConnection connection)
+        public void Close()
         {
-            IDbCommand command = connection.CreateCommand();
-            IDbDataParameter key = command.CreateParameter(":ID", DbType.Int64, 0);
-            IDbDataParameter symbol = command.CreateParameter(":symbol", DbType.String, 255);
-            IDbDataParameter time = command.CreateParameter(":time", DbType.DateTime, 0);
-            IDbDataParameter bid = command.CreateParameter(":bid", DbType.Double, 0);
-            IDbDataParameter ask = command.CreateParameter(":ask", DbType.Double, 0);
-            IDbDataParameter bidSize = command.CreateParameter(":bidSize", DbType.Int32, 0);
-            IDbDataParameter askSize = command.CreateParameter(":askSize", DbType.Int32, 0);
-            IDbDataParameter provider = command.CreateParameter(":provider", DbType.String, 255);
+        }
 
-            command.Parameters.Add(key);
-            command.Parameters.Add(symbol);
-            command.Parameters.Add(time);
-            command.Parameters.Add(bid);
-            command.Parameters.Add(ask);
-            command.Parameters.Add(bidSize);
-            command.Parameters.Add(askSize);
-            command.Parameters.Add(provider);
+        public IEnumerator<KeyValuePair<long, Tick>> GetEnumerator()
+        {
+            return Read().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public int CreateTable()
+        {
+            LinterDbCommand command = connection.CreateCommand();
+            command.CommandText = String.Format(
+                "CREATE OR REPLACE TABLE {0} (", name) +
+                "ID bigint primary key," +
+                "Symbol varchar(255)," +
+                "Time date," +
+                "Bid double," +
+                "Ask double," +
+                "BidSize int," +
+                "AskSize int," +
+                "Provider varchar(255))";
+            return command.ExecuteNonQuery();
+        }
+
+        public void CreateWriteCommand()
+        {
+            LinterDbCommand command = connection.CreateCommand();
+            command.Parameters.Add(":ID", ELinterDbType.Bigint);
+            command.Parameters.Add(":symbol", ELinterDbType.NChar, 510);
+            command.Parameters.Add(":time", ELinterDbType.Date);
+            command.Parameters.Add(":bid", ELinterDbType.Double);
+            command.Parameters.Add(":ask", ELinterDbType.Double);
+            command.Parameters.Add(":bidSize", ELinterDbType.Int);
+            command.Parameters.Add(":askSize", ELinterDbType.Int);
+            command.Parameters.Add(":provider", ELinterDbType.NChar, 510);
 
             command.CommandType = CommandType.Text;
             command.CommandText = String.Format(@"
@@ -172,23 +289,19 @@ namespace DatabaseBenchmark.Databases
                  UPDATE SET {0}.id=:ID, {0}.Symbol=:symbol, {0}.Time=:time, {0}.Bid=:bid, {0}.Ask=:ask, {0}.BidSize=:bidSize, {0}.AskSize=:askSize, {0}.Provider=:provider
                 WHEN NOT MATCHED THEN
                  INSERT ({0}.id, {0}.Symbol, {0}.Time, {0}.Bid, {0}.Ask, {0}.BidSize, {0}.AskSize, {0}.Provider) VALUES (:ID, :symbol, :time, :bid, :ask, :bidSize, :askSize, :provider)",
-                CollectionName);
+                name);
 
-            return command;
+            command.Prepare();
+
+            writeCommand = command;
         }
 
-        private string CreateTableQuery(string tableName)
+        public int DropTable()
         {
-            return String.Format(
-                "CREATE OR REPLACE TABLE {0} (", tableName) +
-                "ID bigint primary key," +
-                "Symbol varchar(255)," +
-                "Time date," +
-                "Bid double," +
-                "Ask double," +
-                "BidSize int," +
-                "AskSize int," +
-                "Provider varchar(255))";
+            LinterDbCommand command = connection.CreateCommand();
+            command.CommandText = String.Format(
+                "DROP TABLE {0} ", name);
+            return command.ExecuteNonQuery();
         }
     }
 }
